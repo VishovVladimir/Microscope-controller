@@ -13,46 +13,74 @@ footer {
     font-size: 12px;
 }
 
-.root-container {
-    text-align: center;
+/* Bootstrap enhancements */
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
-.video-stream {
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.btn {
+    border-radius: 0.3rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn {
+    border-radius: 0.3rem;
+}
+
+.shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Video stream styling */
+.video-stream-mode-text {
+    opacity: 0.8;
+}
+
+/* Controls styling */
+.stream-controls-btns {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-}
-
-.stream-controls-btns {
-    margin-top: 0px;
-    display: flex;
-    justify-content: space-between;
-    align-items: top;
     gap: 20px;
 }
 
-.main-controls-container-layout {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    background-color: #ffffff;
+@media (max-width: 768px) {
+    .stream-controls-btns {
+        flex-direction: column;
+    }
 }
 
+/* Battery indicator styling */
 .battery-status {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 15px auto;
 }
 
 .battery-level {
     position: relative;
-    width: 25px;
-    height: 100px;
-    background-color: #e4e4e4;
-    border-radius: 0.25rem;
+    width: 30px;
+    height: 120px;
+    background-color: #f0f0f0;
+    border-radius: 0.5rem;
     overflow: hidden;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    border: 1px solid #ddd;
 }
 
 .battery-fill {
@@ -61,8 +89,8 @@ footer {
     right: 0;
     width: 100%;
     height: 0%;
-    background-color: #00e09d;
-    transition: height 0.5s ease;
+    background: linear-gradient(to top, #28a745, #20c997);
+    transition: height 0.8s ease;
 }
 
 .battery-percentage {
@@ -70,9 +98,26 @@ footer {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-90deg);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    color: #f5f5f5;
+    color: #333;
+    text-shadow: 0 0 3px rgba(255,255,255,0.8);
+    z-index: 1;
+}
+
+/* Add a battery cap */
+.battery-level:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 5px;
+    background-color: #f0f0f0;
+    border-radius: 3px 3px 0 0;
+    border: 1px solid #ddd;
+    border-bottom: none;
 }
 
 .main-controls-btns {
@@ -106,121 +151,131 @@ th, td {
     justify-content: right;
 }
 
-#light-plus-btn {
-    width: 30px;
-    height: 30px;
-    margin-right: 7px;
+/* Button styling */
+.btn-circle {
+    width: 50px;
+    height: 50px;
+    padding: 0;
     border-radius: 50%;
-    padding: 0px;
-    line-height: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#light-minus-btn {
-    width: 30px;
-    height: 30px;
-    margin-left: 7px;
-    border-radius: 50%;
-    padding: 0px;
-    line-height: 0px;
+.btn-circle.btn-sm {
+    width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
 }
 
-#video-4k-btn {
+.btn-circle.btn-lg {
     width: 60px;
-    margin-right: 0px;
+    height: 60px;
+    font-size: 1.2rem;
 }
 
-#video-1080p-btn {
-    width: 60px;
-    margin-left: 0px;
-}
-
-#arrow-up-btn {
-    width: 90px;
-    height: 40px;
-    text-align: center;
-    align-items: center;
-}
-
-#arrow-left-btn {
-    width: 58px;
-    height: 80px;
-    text-align: center;
-    align-items: center;
-}
-
-#arrow-right-btn {
-    width: 58px;
-    height: 80px;
-    text-align: center;
-    align-items: center;
-}
-
-#arrow-down-btn {
-    width: 90px;
-    height: 40px;
-    text-align: center;
-    align-items: center;
-}
-
-#home-btn {
+/* Light control buttons */
+#light-plus-btn, #light-minus-btn {
     width: 40px;
-    height: 30px;
-    font-size: 18px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px;
+}
+
+/* Resolution buttons */
+#video-4k-btn, #video-1080p-btn {
+    min-width: 60px;
+}
+
+/* Direction buttons */
+#arrow-up-btn, #arrow-down-btn {
+    width: 80px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#arrow-left-btn, #arrow-right-btn {
+    width: 50px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Home button */
+#home-btn {
+    width: 45px;
+    height: 40px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 5px;
-    padding: 0px;
-    line-height: 0px;
 }
 
-#focus-plus-btn-step {
+/* Focus buttons */
+#focus-plus-btn-step, #focus-minus-btn-step {
     width: 50px;
     height: 50px;
-    text-align: center;
+    display: flex;
     align-items: center;
-    padding: 0px;
-    line-height: 0px;
-    font-size: 12px;
+    justify-content: center;
+    font-size: 0.9rem;
+    padding: 0;
 }
 
-#focus-plus-btn-continue {
+#focus-plus-btn-continue, #focus-minus-btn-continue {
     width: 50px;
     height: 50px;
-}
-
-#focus-minus-btn-step {
-    width: 50px;
-    height: 50px;
-    text-align: center;
+    display: flex;
     align-items: center;
-    padding: 0px;
-    line-height: 0px;
-    font-size: 12px;
+    justify-content: center;
 }
 
-#focus-minus-btn-continue {
-    width: 50px;
-    height: 50px;
-}
-
+/* Alarm button */
 #alarm-btn {
     width: 80px;
-    height: 30px;
-    font-size: 12px;
-    padding: 0px;
-    line-height: 0px;
+    height: 40px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* Work button */
 #work-btn {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    text-align: center;
+    display: flex;
     align-items: center;
-    font-size: 20px;
+    justify-content: center;
+    font-size: 1.5rem;
     font-weight: bold;
 }
 
+/* Video stream styling */
 #stream {
-    object-fit: cover;
+    object-fit: contain;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Card styling for video stream */
+.card-body.p-0 {
+    position: relative;
+    background-color: #000;
+}
+
+.card-img-overlay {
+    padding: 0.5rem;
 }
 
 .btn:active,
@@ -231,4 +286,15 @@ th, td {
 .FixMobileHover:hover {
     background-color: inherit;
     text-decoration: none;
+}
+
+.video-recording-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.video-recording-btn button {
+  margin: 5px 0;
 }

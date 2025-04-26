@@ -19,5 +19,6 @@ ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/update_host_ip_for_video_streaming.
 ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/rpi_launch_udp_4k_soft_h264.sh"
 ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/rpi_launch_udp_1080p_mjpg.sh"
 ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/rpi_stop_video_stream.sh"
+ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/rpi_record_video_clips.sh"
 ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/check_config_exists.sh"
 ssh $rpi_user@$rpi_ip "chmod +x $scripts_dir/../update.sh"

@@ -1,185 +1,230 @@
 {% extends "layout.html" %}
 
 {% block main %}
-<div class="root-container">
-  <div class="video-stream">
-    <!-- <video id="stream" autoplay controls src="http://{{ board_ip }}:5602">
-      Your browser does not support HTML video.
-    </video> -->
-    <img id="stream" src="{{ url_for('video_feed') }}">
-    <span class="video-stream-mode-text" hidden>Video: <span style="color:Tomato">unavailable</span></span>
+<div class="container-fluid py-3">
+  <!-- Video Stream Section -->
+  <div class="row justify-content-center mb-4">
+    <div class="col-12 text-center">
+      <div class="card shadow">
+        <div class="card-body p-0">
+          <img id="stream" src="{{ url_for('video_feed') }}" class="img-fluid">
+          <div class="card-img-overlay d-flex align-items-start justify-content-end">
+            <span class="badge badge-pill badge-info video-stream-mode-text">
+              Video: <span class="text-white">1080p</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!---------------------------------------------------------->
-  <!--------------VIDEO BUTTONS STARTS HERE------------------->
-  <!---------------------------------------------------------->
-  <div class="main-common-container">
-    <div class="stream-controls-container" style="text-align:center">
-      <div class="stream-controls-label" hidden>
-        <i class="fas fa-video"></i><span> Управление камерой</span>
-        <br>
-      </div>
-
-      <div class="stream-controls-btns">
-        <!-- PLUS -->
-        <div class="focus-plus-btns">
-          <button id="focus-plus-btn-step"
-            type="button"
-            class="btn btn-outline-info btn-lg">
-            Step
-          </button>
-
-          <button id="focus-plus-btn-continue"
-            type="button"
-            class="fas fa-plus btn btn-outline-info btn-lg">
-          </button>
+  <!-- Controls Section -->
+  <div class="row">
+    <!-- Focus and Resolution Controls -->
+    <div class="col-md-12">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="fas fa-video text-info"></i> Camera Controls
+          </h5>
         </div>
+        <div class="card-body">
+          <div class="row align-items-center justify-content-center">
+            <!-- Focus Plus Controls -->
+            <div class="col-auto">
+              <div class="d-flex">
+                <button id="focus-plus-btn-step"
+                  type="button"
+                  class="btn btn-outline-info btn-lg mr-2">
+                  Step
+                </button>
+                <button id="focus-plus-btn-continue"
+                  type="button"
+                  class="btn btn-outline-info btn-lg">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
 
-        <div class="video-resilution-btn">
-          <!-- 1080P ENABLE -->
-          <button id="video-1080p-btn"
-            type="button"
-            class="btn btn-outline-info btn-sm"
-            onclick="video_switch_resolution('1080p')">
-            1080p
-          </button>
+            <!-- Resolution Controls -->
+            <div class="col-auto">
+              <div class="btn-group">
+                <button id="video-1080p-btn"
+                  type="button"
+                  class="btn btn-outline-info"
+                  onclick="video_switch_resolution('1080p')">
+                  1080p
+                </button>
+                <button id="video-4k-btn"
+                  type="button"
+                  class="btn btn-outline-info"
+                  onclick="video_switch_resolution('4k')">
+                  4K
+                </button>
+              </div>
+            </div>
 
-          <!-- 4K ENABLE -->
-          <button id="video-4k-btn"
-            type="button"
-            class="btn btn-outline-info btn-sm"
-            onclick="video_switch_resolution('4k')">
-            4k
-          </button>
-        </div>
+            <!-- Recording Controls -->
+            <div class="col-auto">
+              <div class="btn-group">
+                <button id="video-record-start-btn"
+                  type="button"
+                  class="btn btn-outline-danger"
+                  onclick="video_start_recording()">
+                  <i class="fas fa-record-vinyl"></i> Start Recording
+                </button>
+                <button id="video-record-stop-btn"
+                  type="button"
+                  class="btn btn-outline-danger"
+                  onclick="video_stop_recording()" disabled>
+                  <i class="fas fa-stop-circle"></i> Stop Recording
+                </button>
+              </div>
+            </div>
 
-        <!-- MINUS -->
-        <div class="focus-minus-btns">
-          <button id="focus-minus-btn-continue"
-            type="button"
-            class="fas fa-minus btn btn-outline-info btn-lg">
-          </button>
-
-          <button id="focus-minus-btn-step"
-            type="button"
-            class="btn btn-outline-info btn-lg">
-            Step
-          </button>
+            <!-- Focus Minus Controls -->
+            <div class="col-auto">
+              <div class="d-flex">
+                <button id="focus-minus-btn-continue"
+                  type="button"
+                  class="btn btn-outline-info btn-lg mr-2">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <button id="focus-minus-btn-step"
+                  type="button"
+                  class="btn btn-outline-info btn-lg">
+                  Step
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!---------------------------------------------------------->
-    <!--------------MAIN STEPPER BUTTONS STARTS HERE------------>
-    <!---------------------------------------------------------->
-    <div class="main-controls-container" style="text-align:center">
-      <div class="main-controls-label" hidden>
-        <i class="fas fa-microscope"></i><span> Управление столом</span>
-        <br>
+    <!-- Main Controls Section -->
+    <div class="col-md-8">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="fas fa-microscope text-primary"></i> Microscope Controls
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row justify-content-center">
+            <div class="col-auto">
+              <div class="d-flex justify-content-center mb-3">
+                <button id="arrow-up-btn" 
+                  type="button"
+                  class="btn btn-outline-primary btn-lg">
+                  <i class="fas fa-arrow-up"></i>
+                </button>
+              </div>
+              <div class="d-flex justify-content-center mb-3">
+                <button id="arrow-left-btn"
+                  type="button"
+                  class="btn btn-outline-primary btn-lg mr-3">
+                  <i class="fas fa-arrow-left"></i>
+                </button>
+                <button id="work-btn"
+                  type="button"
+                  class="btn btn-outline-primary btn-lg rounded-circle">
+                  W
+                </button>
+                <button id="arrow-right-btn"
+                  type="button"
+                  class="btn btn-outline-primary btn-lg ml-3">
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+              <div class="d-flex justify-content-center">
+                <button id="arrow-down-btn"
+                  type="button" 
+                  class="btn btn-outline-primary btn-lg">
+                  <i class="fas fa-arrow-down"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <div class="main-controls-container-layout">
-        <div class="battery-status">
-          <div class="battery-level">
-            <div class="battery-fill"></div>
-            <span class="battery-percentage">0%</span>
+    <!-- Battery and Additional Controls -->
+    <div class="col-md-4">
+      <div class="row">
+        <!-- Battery Status -->
+        <div class="col-md-12 mb-4">
+          <div class="card shadow">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-battery-half text-success"></i> Battery Status
+              </h5>
+            </div>
+            <div class="card-body text-center">
+              <div class="d-flex justify-content-center">
+                <div class="battery-status">
+                  <div class="battery-level">
+                    <div class="battery-fill"></div>
+                    <span class="battery-percentage">0%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="main-controls-btns">
-          <table class="main-contol-btns-table">
-            <tr>
-              <td></td>
-                <td>
-                  <button id="arrow-up-btn" 
-                    type="button"
-                    class="fas fa-arrow-up btn btn-outline-primary">
-                  </button>
-                </td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>
-                <button id="arrow-left-btn"
+        <!-- Light Controls -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-lightbulb text-warning"></i> Light
+              </h5>
+            </div>
+            <div class="card-body text-center">
+              <div class="btn-group">
+                <button id="light-plus-btn"
                   type="button"
-                  class="fas fa-arrow-left btn btn-outline-primary">
+                  class="btn btn-outline-warning rounded-circle">
+                  <i class="fas fa-plus"></i>
                 </button>
-              </td>
-              <td>
-                <button id="work-btn"
+                <button id="light-minus-btn"
+                  type="button"
+                  class="btn btn-outline-warning rounded-circle">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Home and Stop Controls -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow h-100">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-cog text-secondary"></i> Actions
+              </h5>
+            </div>
+            <div class="card-body text-center">
+              <div class="btn-group">
+                <button id="home-btn"
                   type="button"
                   class="btn btn-outline-primary">
-                  W
+                  <i class="fas fa-home"></i>
                 </button>
-              </td>
-              <td>
-                <button id="arrow-right-btn"
+                <button id="alarm-btn"
                   type="button"
-                  class="fas fa-arrow-right btn btn-outline-primary">
+                  class="btn btn-outline-danger">
+                  <i class="fas fa-stop"></i> Stop
                 </button>
-              </td>
-            </tr>
-            <tr>
-              <td></td>
-              <td>
-                <button id="arrow-down-btn"
-                  type="button" 
-                  class="fas fa-arrow-down btn btn-outline-primary">
-                </button>
-              </td>
-              <td></td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="main-controls-home-btn">
-            <button id="home-btn"
-              type="button"
-              class="fas fa-home btn btn-outline-primary">
-          </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="light-alarm-container">
-    <!---------------------------------------------------------->
-    <!--------------LIGHT BUTTONS STARTS HERE------------------->
-    <!---------------------------------------------------------->
-    <div class="light-controls-container" style="text-align:center">
-      <div class="light-controls-label" hidden>
-        <i class="fas fa-lightbulb"></i><span> Свет</span>
-        <br>
-      </div>
-
-      <div class="light-controls-btns">
-        <!--LIGHT PLUS-->
-        <button id="light-plus-btn"
-          type="button"
-          class="fas fa-plus btn btn-outline-primary">
-        </button>
-
-        <!--LIGHT MINUS-->
-        <button id="light-minus-btn"
-          type="button"
-          class="fas fa-minus btn btn-outline-primary">
-        </button>
-      </div>
-    </div>
-
-    <!---------------------------------------------------------->
-    <!--------------ALARM BUTTONS STARTS HERE------------------->
-    <!---------------------------------------------------------->
-    <div class="alarm-controls-btn">
-      <button id="alarm-btn"
-        type="button"
-        class="btn btn-outline-danger btn-sm">
-        Stop
-      </button>
-    </div>
-  </div>
-  <hr hidden>
-  <br>
 </div>
-
 {% endblock %}

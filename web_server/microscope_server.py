@@ -74,6 +74,17 @@ def resolution_switch_request():
     streamer.set_resolution(request.args.get("new_res"))    
     return jsonify("OK")
 
+# AJAX: Handle video recording #
+###############################
+@app.route("/video_recording", methods=["GET", "POST"])
+def recording_control_request():
+    action = request.args.get("action")
+    if action == "start":
+        streamer.start_recording()
+    elif action == "stop":
+        streamer.stop_recording()
+    return jsonify("OK")
+
 
 # STREAM: send jpeg frame #
 ###########################

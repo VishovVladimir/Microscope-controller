@@ -21,3 +21,27 @@ function video_switch_resolution(new_res) {
     request.open("GET", "/video_control?new_res=" + new_res, true);
     request.send();
 }
+
+function video_start_recording() {
+    $.ajax({
+        url: "/video_recording?action=start",
+        type: "GET",
+        success: function(result) {
+            console.log("Started recording");
+            $("#video-record-start-btn").addClass("active").prop("disabled", true);
+            $("#video-record-stop-btn").removeClass("active").prop("disabled", false);
+        }
+    });
+}
+
+function video_stop_recording() {
+    $.ajax({
+        url: "/video_recording?action=stop",
+        type: "GET",
+        success: function(result) {
+            console.log("Stopped recording");
+            $("#video-record-start-btn").removeClass("active").prop("disabled", false);
+            $("#video-record-stop-btn").addClass("active").prop("disabled", true);
+        }
+    });
+}

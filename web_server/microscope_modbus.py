@@ -31,18 +31,27 @@ class ModbusMicroscope:
                             framer=ModbusSocketFramer,
                             timeout=self.timeout)
         self.clinet.connect()
-        assert self.clinet.connected
+        # Removed assertion to allow operation without Modbus device
         if self.clinet.connected == True:
             logging.info('Connected to Modbus TCP/RTU client OK')
         else:
-            logging.error('Connected to Modbus TCP/RTU client FAILED')
+            logging.warning('Connected to Modbus TCP/RTU client FAILED - continuing without Modbus functionality')
 
     def get_bat_level(self):
         logging.debug("Obtained request to retrieve battery level")
+
+        # Check if client is connected before proceeding
+        if not self.clinet.connected:
+            logging.warning("Cannot get battery level: Modbus client not connected")
+            return self.last_bat_level
+
         try:
             response = self.clinet.read_holding_registers(17, 1, slave=self.slave_addr)
         except ModbusException as exc:
             logging.error(f"(Read battery level) --> Received ModbusException({exc}) from library")
+            return self.last_bat_level
+        except Exception as e:
+            logging.error(f"Error reading battery level: {str(e)}")
             return self.last_bat_level
 
         if response.isError():
@@ -59,6 +68,11 @@ class ModbusMicroscope:
 
     def focus_motor_control(self, level, retention):
         logging.debug("Obtained request to focus " + level)
+
+        # Check if client is connected before proceeding
+        if not self.clinet.connected:
+            logging.warning("Cannot control focus: Modbus client not connected")
+            return
 
         step_size_positive = 0
         step_size_negative = 0
@@ -77,40 +91,58 @@ class ModbusMicroscope:
         logging.debug("step_size_positive = {}".format(step_size_positive))
         logging.debug("step_size_negative = {}".format(step_size_negative))
 
-        if level == "upper":
-            self.clinet.write_register(12, step_size_positive, slave=self.slave_addr)
-        elif level == "lower":
-            self.clinet.write_register(12, step_size_negative, slave=self.slave_addr)
-        else:
-            logging.error("wrong cmd")
-        sleep(0.001)
+        try:
+            if level == "upper":
+                self.clinet.write_register(12, step_size_positive, slave=self.slave_addr)
+            elif level == "lower":
+                self.clinet.write_register(12, step_size_negative, slave=self.slave_addr)
+            else:
+                logging.error("wrong cmd")
+            sleep(0.001)
 
-        # Send 0 steps to disable engine after click
-        if retention == "no":
-            # self.clinet.write_register(12, 0, slave=self.slave_addr)
-            sleep(0.02)
+            # Send 0 steps to disable engine after click
+            if retention == "no":
+                # self.clinet.write_register(12, 0, slave=self.slave_addr)
+                sleep(0.02)
+        except Exception as e:
+            logging.error(f"Error controlling focus: {str(e)}")
 
 
     def light_control(self, level):
         logging.debug("Obtained request to make light " + level)
+
+        # Check if client is connected before proceeding
+        if not self.clinet.connected:
+            logging.warning("Cannot control light: Modbus client not connected")
+            return
+
         MAX_PWM_DUTY = conf_reader.get_led_pwm_max_power()
 
         if level == "upper":
             self.cur_pwm_duty += 1
             if self.cur_pwm_duty > MAX_PWM_DUTY:
                 self.cur_pwm_duty = MAX_PWM_DUTY
-            self.clinet.write_register(14, self.cur_pwm_duty, slave=self.slave_addr)
         elif level == "lower":
             if self.cur_pwm_duty > 0:
                 self.cur_pwm_duty -= 1
-            self.clinet.write_register(14, self.cur_pwm_duty, slave=self.slave_addr)
         else:
             logging.error("wrong cmd")
+            return
 
-        logging.debug("Light PWM=%d%% %s\n" % (self.cur_pwm_duty, "(MAX)" if self.cur_pwm_duty >= MAX_PWM_DUTY else ""))
+        try:
+            self.clinet.write_register(14, self.cur_pwm_duty, slave=self.slave_addr)
+            logging.debug("Light PWM=%d%% %s\n" % (self.cur_pwm_duty, "(MAX)" if self.cur_pwm_duty >= MAX_PWM_DUTY else ""))
+        except Exception as e:
+            logging.error(f"Error controlling light: {str(e)}")
 
     def main_motors_control(self, position, retention):
         logging.debug("Obtained request to move motors to " + position)
+
+        # Check if client is connected before proceeding
+        if not self.clinet.connected:
+            logging.warning("Cannot control motors: Modbus client not connected")
+            return
+
         # Swap up and left AND right and down?
         swap = conf_reader.get_swap()
 
@@ -118,107 +150,110 @@ class ModbusMicroscope:
         # 4  - left\right
         # 12 - focus
 
-        # Swap INdependent functions
-        if position == "STOP":
-            self.clinet.write_register(33, 1, slave=self.slave_addr)
-        else:
-            step_size_positive = 0
-            step_size_negative = 0
-
-            if retention == "no":
-                step_size_positive = 1
-                step_size_negative = (-1) & 0xffff
-            elif retention == "released":
+        try:
+            # Swap INdependent functions
+            if position == "STOP":
+                self.clinet.write_register(33, 1, slave=self.slave_addr)
+            else:
                 step_size_positive = 0
                 step_size_negative = 0
-                logging.debug("0 STEPS! 0 STEPS! 0 STEPS!")
-            elif retention == "yes":
-                if position == "up" or position == "down":
-                    step_size_positive = abs(conf_reader.get_step_size_for_updown_stepper())
-                    step_size_negative = (step_size_positive * (-1)) & 0xffff
-                elif position == "right" or position == "left":
-                    step_size_positive = abs(conf_reader.get_step_size_for_leftright_stepper())
-                    step_size_negative = (step_size_positive * (-1)) & 0xffff
 
-            logging.debug("step_size_positive = {}".format(step_size_positive))
-            logging.debug("step_size_negative = {}".format(step_size_negative))
+                if retention == "no":
+                    step_size_positive = 1
+                    step_size_negative = (-1) & 0xffff
+                elif retention == "released":
+                    step_size_positive = 0
+                    step_size_negative = 0
+                    logging.debug("0 STEPS! 0 STEPS! 0 STEPS!")
+                elif retention == "yes":
+                    if position == "up" or position == "down":
+                        step_size_positive = abs(conf_reader.get_step_size_for_updown_stepper())
+                        step_size_negative = (step_size_positive * (-1)) & 0xffff
+                    elif position == "right" or position == "left":
+                        step_size_positive = abs(conf_reader.get_step_size_for_leftright_stepper())
+                        step_size_negative = (step_size_positive * (-1)) & 0xffff
 
-            # Swap dependent functions
-            if swap == "no":
-                if position == "up":
-                    self.clinet.write_register(2, step_size_positive, slave=self.slave_addr)
-                elif position == "down":
-                    self.clinet.write_register(2, step_size_negative, slave=self.slave_addr)
-                elif position == "right":
-                    self.clinet.write_register(4, step_size_positive, slave=self.slave_addr)
-                elif position == "left":
-                    self.clinet.write_register(4, step_size_negative, slave=self.slave_addr)
-                elif position == "HOME" or position == "WORK":
-                    if position == "WORK":
-                        updown_steps = conf_reader.get_work_btn_updown_stepper_default_steps()
-                        leftright_steps = conf_reader.get_work_btn_leftright_stepper_default_steps()
-                        focus_steps = conf_reader.get_work_btn_focus_stepper_default_steps()
-                    elif position == "HOME":
-                        updown_steps = conf_reader.get_home_btn_updown_stepper_default_steps()
-                        leftright_steps = conf_reader.get_home_btn_leftright_stepper_default_steps()
-                        focus_steps = conf_reader.get_home_btn_focus_stepper_default_steps()
+                logging.debug("step_size_positive = {}".format(step_size_positive))
+                logging.debug("step_size_negative = {}".format(step_size_negative))
 
-                    if updown_steps != 0:
-                        if updown_steps < 0:
-                            updown_steps &= 0xffff
-                        self.clinet.write_register(2, updown_steps, slave=self.slave_addr)
-                        sleep(0.02)
+                # Swap dependent functions
+                if swap == "no":
+                    if position == "up":
+                        self.clinet.write_register(2, step_size_positive, slave=self.slave_addr)
+                    elif position == "down":
+                        self.clinet.write_register(2, step_size_negative, slave=self.slave_addr)
+                    elif position == "right":
+                        self.clinet.write_register(4, step_size_positive, slave=self.slave_addr)
+                    elif position == "left":
+                        self.clinet.write_register(4, step_size_negative, slave=self.slave_addr)
+                    elif position == "HOME" or position == "WORK":
+                        if position == "WORK":
+                            updown_steps = conf_reader.get_work_btn_updown_stepper_default_steps()
+                            leftright_steps = conf_reader.get_work_btn_leftright_stepper_default_steps()
+                            focus_steps = conf_reader.get_work_btn_focus_stepper_default_steps()
+                        elif position == "HOME":
+                            updown_steps = conf_reader.get_home_btn_updown_stepper_default_steps()
+                            leftright_steps = conf_reader.get_home_btn_leftright_stepper_default_steps()
+                            focus_steps = conf_reader.get_home_btn_focus_stepper_default_steps()
 
-                    if leftright_steps != 0:
-                        if leftright_steps < 0:
-                            leftright_steps &= 0xffff
-                        self.clinet.write_register(4, leftright_steps, slave=self.slave_addr)
-                        sleep(0.02)
+                        if updown_steps != 0:
+                            if updown_steps < 0:
+                                updown_steps &= 0xffff
+                            self.clinet.write_register(2, updown_steps, slave=self.slave_addr)
+                            sleep(0.02)
 
-                    if focus_steps != 0:
-                        if focus_steps < 0:
-                            focus_steps &= 0xffff
-                        self.clinet.write_register(12, focus_steps, slave=self.slave_addr)
+                        if leftright_steps != 0:
+                            if leftright_steps < 0:
+                                leftright_steps &= 0xffff
+                            self.clinet.write_register(4, leftright_steps, slave=self.slave_addr)
+                            sleep(0.02)
+
+                        if focus_steps != 0:
+                            if focus_steps < 0:
+                                focus_steps &= 0xffff
+                            self.clinet.write_register(12, focus_steps, slave=self.slave_addr)
+                    else:
+                        logging.error("Unknown command for motors")
+                elif swap == "yes":
+                    if position == "up":
+                        self.clinet.write_register(4, step_size_negative, slave=self.slave_addr)
+                    elif position == "down":
+                        self.clinet.write_register(4, step_size_positive, slave=self.slave_addr)
+                    elif position == "right":
+                        self.clinet.write_register(2, step_size_negative, slave=self.slave_addr)
+                    elif position == "left":
+                        self.clinet.write_register(2, step_size_positive, slave=self.slave_addr)
+                    elif position == "HOME" or position == "WORK":
+                        if position == "WORK":
+                            updown_steps = conf_reader.get_work_btn_updown_stepper_default_steps()
+                            leftright_steps = conf_reader.get_work_btn_leftright_stepper_default_steps()
+                            focus_steps = conf_reader.get_work_btn_focus_stepper_default_steps()
+                        elif position == "HOME":
+                            updown_steps = conf_reader.get_home_btn_updown_stepper_default_steps()
+                            leftright_steps = conf_reader.get_home_btn_leftright_stepper_default_steps()
+                            focus_steps = conf_reader.get_home_btn_focus_stepper_default_steps()
+
+                        if updown_steps != 0:
+                            if updown_steps < 0:
+                                updown_steps &= 0xffff
+                            self.clinet.write_register(4, updown_steps, slave=self.slave_addr)
+                            sleep(0.02)
+
+                        if leftright_steps != 0:
+                            if leftright_steps < 0:
+                                leftright_steps &= 0xffff
+                            self.clinet.write_register(2, leftright_steps, slave=self.slave_addr)
+                            sleep(0.02)
+
+                        if focus_steps != 0:
+                            if focus_steps < 0:
+                                focus_steps &= 0xffff
+                            self.clinet.write_register(12, focus_steps, slave=self.slave_addr)
+                    else:
+                        logging.error("Unknown command for motors")
                 else:
-                    logging.error("Unknown command for motors")
-            elif swap == "yes":
-                if position == "up":
-                    self.clinet.write_register(4, step_size_negative, slave=self.slave_addr)
-                elif position == "down":
-                    self.clinet.write_register(4, step_size_positive, slave=self.slave_addr)
-                elif position == "right":
-                    self.clinet.write_register(2, step_size_negative, slave=self.slave_addr)
-                elif position == "left":
-                    self.clinet.write_register(2, step_size_positive, slave=self.slave_addr)
-                elif position == "HOME" or position == "WORK":
-                    if position == "WORK":
-                        updown_steps = conf_reader.get_work_btn_updown_stepper_default_steps()
-                        leftright_steps = conf_reader.get_work_btn_leftright_stepper_default_steps()
-                        focus_steps = conf_reader.get_work_btn_focus_stepper_default_steps()
-                    elif position == "HOME":
-                        updown_steps = conf_reader.get_home_btn_updown_stepper_default_steps()
-                        leftright_steps = conf_reader.get_home_btn_leftright_stepper_default_steps()
-                        focus_steps = conf_reader.get_home_btn_focus_stepper_default_steps()
+                    logging.error("Unknown swap value in config file")
 
-                    if updown_steps != 0:
-                        if updown_steps < 0:
-                            updown_steps &= 0xffff
-                        self.clinet.write_register(4, updown_steps, slave=self.slave_addr)
-                        sleep(0.02)
-
-                    if leftright_steps != 0:
-                        if leftright_steps < 0:
-                            leftright_steps &= 0xffff
-                        self.clinet.write_register(2, leftright_steps, slave=self.slave_addr)
-                        sleep(0.02)
-
-                    if focus_steps != 0:
-                        if focus_steps < 0:
-                            focus_steps &= 0xffff
-                        self.clinet.write_register(12, focus_steps, slave=self.slave_addr)
-                else:
-                    logging.error("Unknown command for motors")
-            else:
-                logging.error("Unknown swap value in config file")
-
-        sleep(0.02)
+            sleep(0.02)
+        except Exception as e:
+            logging.error(f"Error controlling motors: {str(e)}")
