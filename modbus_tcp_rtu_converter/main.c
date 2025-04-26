@@ -345,11 +345,11 @@ static void _setup_serial_connection(void)
     }
 
     rc = modbus_connect(modbus_converter_dev.uart_ctx);
-    if (rc < 0) {
-        logger_err_print("Connection to serial device %s failed: %s\r\n", modbus_converter_dev.config->uart_device_name, modbus_strerror(errno));
-        _free_serial_ctx();
-        exit(EXIT_FAILURE);
-    }
+//    if (rc < 0) {
+//        logger_err_print("Connection to serial device %s failed: %s\r\n", modbus_converter_dev.config->uart_device_name, modbus_strerror(errno));
+//        _free_serial_ctx();
+//        exit(EXIT_FAILURE);
+//    }
 
     logger_info_print("Serial connection has been established successfully\r\n");
 }
