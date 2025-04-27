@@ -4,7 +4,7 @@ SAVE_DIR="/home/pi/saved-video"
 LOG_FILE="$SAVE_DIR/video_log.txt"
 REMOTE_USER="isaiya"
 REMOTE_HOST="164.90.187.105"
-REMOTE_DIR="~/recorded_video"
+REMOTE_DIR="/home/isaiya/recorded_video"
 
 # Check if log file exists
 if [ ! -f "$LOG_FILE" ]; then
