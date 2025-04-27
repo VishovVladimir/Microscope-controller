@@ -133,6 +133,18 @@ def send_config_data_to_client():
                       "initial_bat_level": initial_bat_level })
 
 
+# AJAX: Video recording control #
+################################
+@app.route("/video_recording", methods=["GET", "POST"])
+def video_recording_request():
+    action = request.args.get("action")
+    if action == "start":
+        streamer.start_record()
+    elif action == "stop":
+        streamer.stop_record()
+    return jsonify("OK")
+
+
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
