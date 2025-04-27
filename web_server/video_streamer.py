@@ -22,7 +22,7 @@ class VideoStreamer:
     # Get frames in continuously mode (for threading)
     START_JPEG_IMG_FRAME_CONTINUOUSLY_SCRIPT_FILE_PATH="/home/pi/.microscope/web_server/stream_scripts/camera_capture_frames_continuously.sh"
 
-    SAVE_FOLDER = os.path.expanduser("~/saved-video/")
+    SAVE_FOLDER = os.path.expanduser("/home/pi/saved-video/")
     LOG_FILE_PATH = os.path.join(SAVE_FOLDER, "video_log.txt")
 
     is_stream_started_flag = False
